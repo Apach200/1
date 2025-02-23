@@ -1,8 +1,0 @@
-../Core/Src/main.c:145:1:HAL_TIM_PeriodElapsedCallback	1
-../Core/Src/main.c:162:5:main	6
-../Core/Src/main.c:375:6:SystemClock_Config	3
-../Core/Src/main.c:421:6:CAN_interface_Test	3
-../Core/Src/main.c:447:6:UART_interface_Test	1
-../Core/Src/main.c:470:6:Board_Name_to_Terminal	10
-../Core/Src/main.c:546:11:Encoder_to_LCD	7
-../Core/Src/main.c:612:6:Error_Handler	1
