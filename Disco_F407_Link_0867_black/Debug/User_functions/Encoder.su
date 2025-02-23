@@ -1,4 +1,0 @@
-../User_functions/Encoder.c:11:6:Encoder_Init	8	static
-../User_functions/Encoder.c:20:10:Encoder_Read	16	static
-../User_functions/Encoder.c:25:16:Encoder_Get_Status	8	static
-../User_functions/Encoder.c:46:6:Encoder_Config	56	static
