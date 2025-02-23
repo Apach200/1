@@ -1,0 +1,11 @@
+../User_functions/format_out.c:65:7:process_adc_buffer	2
+../User_functions/format_out.c:83:6:Message_2_UART	8
+../User_functions/format_out.c:127:6:Message_2_UART_u16	8
+../User_functions/format_out.c:164:6:Message_2_UART_u32	8
+../User_functions/format_out.c:207:10:Process_Rx_Array_UART_DMA	5
+../User_functions/format_out.c:224:10:RTC_update_and_Terminal	3
+../User_functions/format_out.c:262:6:GPIO_Blink_Test	2
+../User_functions/format_out.c:275:6:Get_Time	3
+../User_functions/format_out.c:300:6:Get_Time_output	2
+../User_functions/format_out.c:328:6:Get_Date	2
+../User_functions/format_out.c:349:10:CAN_GetState	7

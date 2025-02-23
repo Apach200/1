@@ -1,0 +1,8 @@
+../Core/Src/main.c:145:1:HAL_TIM_PeriodElapsedCallback	16	static
+../Core/Src/main.c:162:5:main	24	static
+../Core/Src/main.c:375:6:SystemClock_Config	88	static
+../Core/Src/main.c:421:6:CAN_interface_Test	16	static
+../Core/Src/main.c:447:6:UART_interface_Test	16	static
+../Core/Src/main.c:470:6:Board_Name_to_Terminal	280	static
+../Core/Src/main.c:546:11:Encoder_to_LCD	8	static
+../Core/Src/main.c:612:6:Error_Handler	4	static,ignoring_inline_asm
