@@ -211,6 +211,7 @@ void Datum_to_1602LCD(void){
 
 extern	  char String_LCD[32];
 extern    RTC_DateTypeDef DateToUpdate;
+HAL_RTC_GetDate(&hrtc, &DateToUpdate, RTC_FORMAT_BIN);
 sprintf( String_LCD,
 		 "%02d.%02d.20%02d",
 		 DateToUpdate.Date, DateToUpdate.Month, DateToUpdate.Year);

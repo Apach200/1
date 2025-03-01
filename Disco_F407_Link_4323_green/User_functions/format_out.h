@@ -51,8 +51,11 @@ uint16_t CAN_GetState(CAN_HandleTypeDef *hcan, char* String);
 float process_adc_buffer(uint16_t *buffer);
 //void HAL_ADC_ConvHalfCpltCallback(ADC_HandleTypeDef* hadc);
 //void HAL_ADC_ConvCpltCallback(ADC_HandleTypeDef *hadc) ;
-
-
+//void Datum_Time_from_PC(void);
+void Datum_Time_from_PC(
+						RTC_DateTypeDef Date_Upd,
+						RTC_TimeTypeDef sTime_Set
+						);
 
 /* Private defines -----------------------------------------------------------*/
 #define CO_Aliex_Disco407green	0x3A

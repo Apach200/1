@@ -292,10 +292,14 @@ void CAN1_TX_IRQHandler(void)
 void CAN1_RX0_IRQHandler(void)
 {
   /* USER CODE BEGIN CAN1_RX0_IRQn 0 */
-
+//extern	uint8_t Rx_Array_0[];	//uint8_t Rx_Array[16]={0};
+//extern	CAN_RxHeaderTypeDef Rx_Header;
+//	HAL_GPIO_WritePin(GPIOD, GPIO_PIN_14, GPIO_PIN_SET);
+//HAL_CAN_GetRxMessage(&hcan1, CAN_RX_FIFO0, &Rx_Header, Rx_Array_0);
   /* USER CODE END CAN1_RX0_IRQn 0 */
   HAL_CAN_IRQHandler(&hcan1);
   /* USER CODE BEGIN CAN1_RX0_IRQn 1 */
+
 
   /* USER CODE END CAN1_RX0_IRQn 1 */
 }
@@ -306,10 +310,15 @@ void CAN1_RX0_IRQHandler(void)
 void CAN1_RX1_IRQHandler(void)
 {
   /* USER CODE BEGIN CAN1_RX1_IRQn 0 */
-
+//	extern	uint8_t Rx_Array_1[];	//uint8_t Rx_Array[16]={0};
+//	extern	CAN_RxHeaderTypeDef Rx_Header;
+//	HAL_GPIO_WritePin(GPIOD, GPIO_PIN_15, GPIO_PIN_SET);
+//	HAL_GPIO_TogglePin(GPIOD, GPIO_PIN_15);
+//	HAL_CAN_GetRxMessage(&hcan1, CAN_RX_FIFO1, &Rx_Header, Rx_Array_1);
   /* USER CODE END CAN1_RX1_IRQn 0 */
   HAL_CAN_IRQHandler(&hcan1);
   /* USER CODE BEGIN CAN1_RX1_IRQn 1 */
+
 
   /* USER CODE END CAN1_RX1_IRQn 1 */
 }
@@ -502,7 +511,6 @@ void CAN2_TX_IRQHandler(void)
 void CAN2_RX0_IRQHandler(void)
 {
   /* USER CODE BEGIN CAN2_RX0_IRQn 0 */
-
   /* USER CODE END CAN2_RX0_IRQn 0 */
   HAL_CAN_IRQHandler(&hcan2);
   /* USER CODE BEGIN CAN2_RX0_IRQn 1 */

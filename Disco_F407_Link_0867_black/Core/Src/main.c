@@ -135,6 +135,8 @@ void CAN_interface_Test(void);
 void UART_interface_Test(void);
 void Board_Name_to_Terminal(void);
 int16_t Encoder_to_LCD(void);
+
+//void Datum_Time_from_PC(void);
 Encoder_Status encoderStatus;
 /* USER CODE END PFP */
 
@@ -200,13 +202,13 @@ int main(void)
   MX_TIM2_Init();
   MX_TIM5_Init();
   MX_TIM1_Init();
-  MX_CAN2_Init();
+  //MX_CAN2_Init();
   /* USER CODE BEGIN 2 */
 
   //	HAL_RTC_SetTime(&hrtc, &sTime,        RTC_FORMAT_BIN);
   //	HAL_RTC_SetDate(&hrtc, &DateToUpdate, RTC_FORMAT_BIN);
-  HAL_RTC_GetDate(&hrtc, &DateToUpdate, RTC_FORMAT_BIN);
-  HAL_RTC_GetTime(&hrtc, &sTime,        RTC_FORMAT_BIN);
+//  HAL_RTC_GetDate(&hrtc, &DateToUpdate, RTC_FORMAT_BIN);
+//  HAL_RTC_GetTime(&hrtc, &sTime,        RTC_FORMAT_BIN);
 
   Encoder_Config();  // configure the encoders timer
   Encoder_Init();    // start the encoders timer
@@ -216,11 +218,13 @@ int main(void)
   //GPIO_Blink_Test(GPIOA, GPIO_PIN_7|GPIO_PIN_6, 25, 33); 						// for_STM32F4XX_Ali_pcb
    GPIO_Blink_Test(GPIOD, GPIO_PIN_12|GPIO_PIN_13|GPIO_PIN_14|GPIO_PIN_15, 25, 33);// blink_at_Discovery_EVB
   //UART_interface_Test(); //while(1){;}
-  //CAN_interface_Test();
+  CAN_interface_Test();
   HAL_TIM_Base_Start(&htim8);
   HAL_TIM_Base_Start_IT(&htim4);
   HAL_UART_Receive_DMA(&huart2, Array_from_Terminal, sizeof Array_from_Terminal );
-  //HAL_Delay(1500);
+
+ // Datum_Time_from_PC(DateToUpdate,sTime);
+
   Board_Name_to_Terminal();
   //OD_PERSIST_COMM.x1018_identity.serialNumber = HAL_GetUIDw0();
 //  Message_2_UART_u32(
@@ -421,12 +425,17 @@ void SystemClock_Config(void)
 void CAN_interface_Test(void)
 {
 
- Tx_Header.IDE    = CAN_ID_STD;
- Tx_Header.ExtId  = 0;
- Tx_Header.DLC    = 8;
- Tx_Header.StdId  = 0x7EC;
- Tx_Header.RTR    = CAN_RTR_DATA;
- HAL_CAN_Start(&hcan1);  HAL_Delay(1500);
+	 Tx_Header.IDE    = CAN_ID_EXT;
+	 Tx_Header.DLC    = 8;
+	 Tx_Header.StdId  = 0;
+	 Tx_Header.ExtId  = 0x0867;
+	 Tx_Header.RTR    = CAN_RTR_DATA;
+
+ HAL_CAN_Start(&hcan1);
+ HAL_Delay(1500);
+ for(uint16_t cnt=0;cnt<16;cnt++){Tx_Array[cnt]=Tx_Array[cnt]+7;}
+
+ Message_2_UART_u32("\n\r Tx_Header.ExtId  = 0x%X%X \n\r ", Tx_Header.ExtId);
 
  if(HAL_CAN_AddTxMessage( &hcan1,
    		               &Tx_Header,
@@ -436,9 +445,11 @@ void CAN_interface_Test(void)
 	  //while(HAL_CAN_GetTxMailboxesFreeLevel(&hcan1) != 3) {}
 		  for(uint8_t cnt=0;cnt<22;cnt++)
 		  {
-		   HAL_GPIO_TogglePin(LED2_GPIO_Port, LED2_Pin);//LED2_Pin//yellow
+			   HAL_GPIO_TogglePin(LED2_GPIO_Port, LED2_Pin);//LED2_Pin//yellow
 		   HAL_Delay(46);
 		  }
+		   HAL_GPIO_WritePin(LED2_GPIO_Port, LED2_Pin,GPIO_PIN_SET);//LED2_Pin//yellow
+
 	  }
 }
 
@@ -470,12 +481,12 @@ void UART_interface_Test(void)
 void Board_Name_to_Terminal(void)
 {
 	const char Message_0[]={"   ******************************************\n\r"};
-//	const char Message_1[]={"*  Upper Blackboard  STM32F4XX___Ali     *\n\r"};
-//	const char Message_2[]={"*  Lower Blackboard  STM32F4XX___Ali     *\n\r"};
+//	const char Message_3[]={"*  Upper Blackboard  STM32F4XX__Ali3032 *\n\r"};
+	const char Message_3[]={"*  Lower Blackboard  STM32F4XX__Ali0867  *\n\r"};
 //	const char Message_3[]={"*  STM32F4DISCOVERY Green_board China    *\n\r"};
-	const char Message_3[]={"*  STM32F4DISCO Greenboard_STLINK_4323   *\n\r"};
+//	const char Message_3[]={"*  STM32F4DISCO Greenboard_STLINK_4323   *\n\r"};
 //	const char Message_3[]={"*  STM32F4DISCO Greenboard_STLINK_2734   *\n\r"};
-//	const char Message_4[]={"*  STM32F4DISCOVERY Blue_board Original  *\n\r"};
+//	const char Message_3[]={"*  STM32F4DISCOVERY Blue_board Orig2211  *\n\r"};
 //	const char Message_5[]={"*       *\n\r"};
 	char Array_for_Messages[128]={};
 	uint16_t Msg_Length;
@@ -485,6 +496,9 @@ void Board_Name_to_Terminal(void)
 //	Chip_ID_96bit[0] = HAL_GetUIDw0();
 //	Chip_ID_96bit[1] = HAL_GetUIDw1();
 //	Chip_ID_96bit[2] = HAL_GetUIDw2();
+
+
+
 
 	Msg_Length = sizeof(Message_0);
 	while(TerminalInterface.gState != HAL_UART_STATE_READY){;}
@@ -529,6 +543,9 @@ void Board_Name_to_Terminal(void)
 						);
 	HAL_UART_Transmit_DMA( &TerminalInterface, (uint8_t*)Array_for_Messages, Msg_Length);
 
+	Get_Date();
+	Get_Time();
+
 	Msg_Length = sizeof(Message_0);
 	while(TerminalInterface.gState != HAL_UART_STATE_READY){;}
 	HAL_UART_Transmit_DMA( &TerminalInterface, (uint8_t*)Message_0, Msg_Length);
@@ -539,6 +556,24 @@ void Board_Name_to_Terminal(void)
 	Array_for_Messages[4]=0x0a;		Array_for_Messages[5]=0x0d;
 	HAL_UART_Transmit_DMA( &TerminalInterface, (uint8_t*)(Array_for_Messages), 6);
 	while(TerminalInterface.gState != HAL_UART_STATE_READY){;}
+
+
+
+
+
+//HAL_UART_Transmit_DMA( &TerminalInterface, (uint8_t*)(Macro_Date + Lng -8), 3);
+//while(TerminalInterface.gState != HAL_UART_STATE_READY){;}
+//
+//HAL_UART_Transmit_DMA( &TerminalInterface, (uint8_t*)(Macro_Date + Lng -3), 3);
+//while(TerminalInterface.gState != HAL_UART_STATE_READY){;}
+
+
+
+//HAL_UART_Transmit_DMA( &TerminalInterface, (uint8_t*)(__TIME__), sizeof(__TIME__));
+//while(TerminalInterface.gState != HAL_UART_STATE_READY){;}
+//
+//HAL_UART_Transmit_DMA( &TerminalInterface, (uint8_t*)(Macro_Date), sizeof(__DATE__));
+//while(TerminalInterface.gState != HAL_UART_STATE_READY){;}
 }
 
 /////////////////////////////////////////////////////////////////////
@@ -596,6 +631,60 @@ void Board_Name_to_Terminal(void)
 
 
   ///////////////////////////////////////////////////////////////////////////////
+//  void Datum_Time_from_PC(void)
+//  {
+//	  RTC_DateTypeDef Date_Upd;
+//	  RTC_TimeTypeDef sTime_Set;// = {19, 24, 0,0,0,0,0};; // ={0,0,0};      ///19h16min
+//
+//	  char Macro_Time[] = {__TIME__};
+//	  char Macro_Date[] = {__DATE__};
+//	  uint16_t Lng =  sizeof(__DATE__);
+//	  //uint16_t Lng_T =  sizeof(__TIME__);
+//	  Date_Upd.Year = (*(Macro_Date + Lng -2)-0x30)*10 + (*(Macro_Date + Lng -1)-0x30)*1;
+//	  if(
+//			  *(Macro_Date + Lng -8)==0x31
+//			  ||
+//			  *(Macro_Date + Lng -8)==0x31
+//		){
+//		   Date_Upd.Date = (*(Macro_Date + Lng -8)-0x30)*10 + (*(Macro_Date + Lng -7)-0x30)*1;
+//	  	 } else {
+//	  		 	 Date_Upd.Date = *(Macro_Date + Lng -7)-0x30;
+//	  	 	    }
+//
+//
+//	  if(*(Macro_Date + 0)=='J')
+//	  {
+//	  	if(*(Macro_Date + 1)=='a'){Date_Upd.Month = 1;}
+//	  	if(*(Macro_Date + 2)=='n'){Date_Upd.Month = 6;}
+//	  	if(*(Macro_Date + 2)=='l'){Date_Upd.Month = 7;}
+//	  }
+//
+//	  if(*(Macro_Date + 0)=='F'){Date_Upd.Month = 2;}
+//
+//	  if(*(Macro_Date + 0)=='M')
+//	  	{
+//	  	if(*(Macro_Date + 2)=='r'){Date_Upd.Month = 3;}
+//	  	if(*(Macro_Date + 2)=='y'){Date_Upd.Month = 5;}
+//	  	}
+//
+//	  if(*(Macro_Date + 0)=='A')
+//	  {
+//	  	if(*(Macro_Date + 1)=='p'){Date_Upd.Month = 4;}
+//	  	if(*(Macro_Date + 1)=='u'){Date_Upd.Month = 8;}
+//	  }
+//
+//	  if(*(Macro_Date + 0)=='S'){Date_Upd.Month = 9;}
+//	  if(*(Macro_Date + 0)=='O'){Date_Upd.Month = 10;}
+//	  if(*(Macro_Date + 0)=='N'){Date_Upd.Month = 11;}
+//	  if(*(Macro_Date + 0)=='D'){Date_Upd.Month = 12;}
+//	  HAL_RTC_SetDate(&hrtc, &Date_Upd, RTC_FORMAT_BIN);
+//
+//	  	sTime_Set.Hours   = (*(Macro_Time+0)-0x30)*10 + (*(Macro_Time +1)-0x30)*1;
+//	  	sTime_Set.Minutes = (*(Macro_Time+3)-0x30)*10 + (*(Macro_Time +4)-0x30)*1;
+//	  	sTime_Set.Seconds = (*(Macro_Time+6)-0x30)*10 + (*(Macro_Time +7)-0x30)*1;
+//	  	HAL_RTC_SetTime(&hrtc, &sTime_Set,        RTC_FORMAT_BIN);
+//
+//  }
 
   ///////////////////////////////////////////////////////////////////////////////
 

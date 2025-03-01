@@ -412,8 +412,68 @@ default:	Length_String =sprintf(String,"CAN_UNknown_state\n\r\n\r");
 return (Length_String);
 }
 
+////////////////////////////////////
+
+//void Datum_Time_from_PC(void)
+void Datum_Time_from_PC(
+						RTC_DateTypeDef Date_Upd,
+						RTC_TimeTypeDef sTime_Set
+						)
+ {
+//	  RTC_DateTypeDef Date_Upd;
+//	  RTC_TimeTypeDef sTime_Set;
+
+	  char Macro_Time[] = {__TIME__};
+	  char Macro_Date[] = {__DATE__};
+	  uint16_t Lng =  sizeof(__DATE__);
+	  Date_Upd.Year = ( (uint8_t)(*(Macro_Date + Lng -2) ) - 0x30 )*1 +  ((uint8_t)(*(Macro_Date + Lng -3)) - 0x30 )*10;
+
+	  if(
+			  *(Macro_Date + Lng -8)==0x31
+			  ||
+			  *(Macro_Date + Lng -8)==0x31
+		){
+		   Date_Upd.Date = (*(Macro_Date + Lng -8)-0x30)*10 + (*(Macro_Date + Lng -7)-0x30)*1;
+	  	 } else {
+	  		 	 Date_Upd.Date = *(Macro_Date + Lng -7)-0x30;
+	  	 	    }
 
 
+	  if(*(Macro_Date + 0)=='J')
+	  {
+	  	if(*(Macro_Date + 1)=='a'){Date_Upd.Month = 1;}
+	  	if(*(Macro_Date + 2)=='n'){Date_Upd.Month = 6;}
+	  	if(*(Macro_Date + 2)=='l'){Date_Upd.Month = 7;}
+	  }
 
+	  if(*(Macro_Date + 0)=='F'){Date_Upd.Month = 2;}
+
+	  if(*(Macro_Date + 0)=='M')
+	  	{
+	  	if(*(Macro_Date + 2)=='r'){Date_Upd.Month = 3;}
+	  	if(*(Macro_Date + 2)=='y'){Date_Upd.Month = 5;}
+	  	}
+
+	  if(*(Macro_Date + 0)=='A')
+	  {
+	  	if(*(Macro_Date + 1)=='p'){Date_Upd.Month = 4;}
+	  	if(*(Macro_Date + 1)=='u'){Date_Upd.Month = 8;}
+	  }
+
+	  if(*(Macro_Date + 0)=='S'){Date_Upd.Month = 9;}
+	  if(*(Macro_Date + 0)=='O'){Date_Upd.Month = 10;}
+	  if(*(Macro_Date + 0)=='N'){Date_Upd.Month = 11;}
+	  if(*(Macro_Date + 0)=='D'){Date_Upd.Month = 12;}
+	  HAL_RTC_SetDate(&hrtc, &Date_Upd, RTC_FORMAT_BIN);
+
+	  	sTime_Set.Hours   = (*(Macro_Time+0)-0x30)*10 + (*(Macro_Time +1)-0x30)*1;
+	  	sTime_Set.Minutes = (*(Macro_Time+3)-0x30)*10 + (*(Macro_Time +4)-0x30)*1;
+	  	sTime_Set.Seconds = (*(Macro_Time+6)-0x30)*10 + (*(Macro_Time +7)-0x30)*1;
+	  	HAL_RTC_SetTime(&hrtc, &sTime_Set,        RTC_FORMAT_BIN);
+
+	    HAL_RTC_GetDate(&hrtc, &Date_Upd, RTC_FORMAT_BIN);
+	    HAL_RTC_GetTime(&hrtc, &sTime_Set,        RTC_FORMAT_BIN);
+
+ }
 
 ////////////////////////////////////
