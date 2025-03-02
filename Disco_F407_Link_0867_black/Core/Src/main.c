@@ -205,34 +205,17 @@ int main(void)
   //MX_CAN2_Init();
   /* USER CODE BEGIN 2 */
 
-  //	HAL_RTC_SetTime(&hrtc, &sTime,        RTC_FORMAT_BIN);
-  //	HAL_RTC_SetDate(&hrtc, &DateToUpdate, RTC_FORMAT_BIN);
-//  HAL_RTC_GetDate(&hrtc, &DateToUpdate, RTC_FORMAT_BIN);
-//  HAL_RTC_GetTime(&hrtc, &sTime,        RTC_FORMAT_BIN);
-
+ // Datum_Time_from_PC(DateToUpdate,sTime);
   Encoder_Config();  // configure the encoders timer
   Encoder_Init();    // start the encoders timer
   LCD_ini();
-  // Logo_to_1602LCD();
   Datum_to_1602LCD();
-  //GPIO_Blink_Test(GPIOA, GPIO_PIN_7|GPIO_PIN_6, 25, 33); 						// for_STM32F4XX_Ali_pcb
-   GPIO_Blink_Test(GPIOD, GPIO_PIN_12|GPIO_PIN_13|GPIO_PIN_14|GPIO_PIN_15, 25, 33);// blink_at_Discovery_EVB
-  //UART_interface_Test(); //while(1){;}
+  GPIO_Blink_Test(GPIOD, GPIO_PIN_12|GPIO_PIN_13|GPIO_PIN_14|GPIO_PIN_15, 25, 33);// blink_at_Discovery_EVB
   CAN_interface_Test();
   HAL_TIM_Base_Start(&htim8);
   HAL_TIM_Base_Start_IT(&htim4);
   HAL_UART_Receive_DMA(&huart2, Array_from_Terminal, sizeof Array_from_Terminal );
-
- // Datum_Time_from_PC(DateToUpdate,sTime);
-
   Board_Name_to_Terminal();
-  //OD_PERSIST_COMM.x1018_identity.serialNumber = HAL_GetUIDw0();
-//  Message_2_UART_u32(
-//		  	  	  	  "\n\r OD_PERSIST_COMM.x1018_identity.serialNumber",
-//					  HAL_GetUIDw0()
-//					  );
-
-
 
   /* USER CODE END 2 */
 
@@ -247,7 +230,7 @@ Ticks = HAL_GetTick();
 Ticks_2 = HAL_GetTick();
 
 DWT->CTRL |= 1 ; // Enable_the_Counter_of_Core_circles
-
+DWT->CYCCNT = 0; // reset the counter
 //**********************************************************************************************
 Ticks_2=HAL_GetTick();
 do
@@ -255,9 +238,7 @@ do
 
 }while (HAL_GetTick() - Ticks_2<500);
 
-#if 1
-uint32_t Delta_T[4]={0};/////Measurement_of_duration_canopen_app_process();
-#endif
+
 
 //**********************************************************************************************
 Local_Count=0;
@@ -267,34 +248,19 @@ Ticks_2=HAL_GetTick();
 			switch (Local_Count)
 				{
 				case 0:
-//																			//HAL_GPIO_WritePin(GPIOD, GPIO_PIN_13,GPIO_PIN_RESET );
 					Local_Count=1;
 					break;
 
 				case 1:
-//					HAL_GPIO_WritePin(GPIOD, GPIO_PIN_13,GPIO_PIN_SET );
-//					DWT->CYCCNT = 0; // reset the counter
-//					canopen_app_process();
-//					Delta_T[1]= DWT->CYCCNT;
-//					HAL_GPIO_WritePin(GPIOD, GPIO_PIN_13,GPIO_PIN_RESET );
 					Local_Count=2;
 					break;
 
 				case 2:
-//					HAL_GPIO_WritePin(GPIOD, GPIO_PIN_13,GPIO_PIN_SET );
-//					DWT->CYCCNT = 0; // reset the counter
-//					canopen_app_process();
-//					Delta_T[2]= DWT->CYCCNT;
-//					HAL_GPIO_WritePin(GPIOD, GPIO_PIN_13,GPIO_PIN_RESET );
+
 					Local_Count=3;
 					break;
 
 				case 3:
-//					HAL_GPIO_WritePin(GPIOD, GPIO_PIN_13,GPIO_PIN_SET );
-//					DWT->CYCCNT = 0; // reset the counter
-//					canopen_app_process();
-//					Delta_T[3]= DWT->CYCCNT;
-//					HAL_GPIO_WritePin(GPIOD, GPIO_PIN_13,GPIO_PIN_RESET );
 					Local_Count=0;
 					break;
 
@@ -311,51 +277,6 @@ Ticks_2=HAL_GetTick();
 
 
 
-
-#if 1
-///Measurement_of_duration_canopen_app_process_Results
-uint16_t LLL = sprintf(
-					Message_to_Terminal,
-					"\n\r\n\r Duration_of_the_CO_process*6nc = %d\n\r",
-					(uint16_t)Duration_of_the_CO_process*6
-					);
-
- LLL = LLL + sprintf(
-					Message_to_Terminal+LLL,
-					"\n\r Delta_T[0] = 0x%04X%04X -> %d ns\n\r",
-					(uint16_t)(Delta_T[0] >> 16 ),
-					(uint16_t)(Delta_T[0] & 0x0FFFF ),
-					(uint16_t)(((float)Delta_T[0]*6.3333) )
-					);
-
- LLL = LLL + sprintf(
-					Message_to_Terminal+LLL,
-					"\n\r Delta_T[0] = 0x%04X%04X -> %d ns\n\r",
-					(uint16_t)(Delta_T[1] >> 16 ),
-					(uint16_t)(Delta_T[1] & 0x0FFFF ),
-					(uint16_t)(((float)Delta_T[1]*6.3333) )
-					);
-
- LLL = LLL + sprintf(
-					Message_to_Terminal+LLL,
-					"\n\r Delta_T[0] = 0x%04X%04X -> %d ns\n\r",
-					(uint16_t)(Delta_T[2] >> 16 ),
-					(uint16_t)(Delta_T[2] & 0x0FFFF ),
-					(uint16_t)(((float)Delta_T[2]*6.3333) )
-					);
-
- LLL = LLL + sprintf(
-					Message_to_Terminal+LLL,
-					"\n\r Delta_T[0] = 0x%04X%04X -> %d ns\n\r\n\r\n\r\n\r\n\r\n\r\n\r",
-					(uint16_t)(Delta_T[3] >> 16 ),
-					(uint16_t)(Delta_T[3] & 0x0FFFF ),
-					(uint16_t)(((float)Delta_T[3]*6.3333) )
-					);
-
-while(TerminalInterface.gState != HAL_UART_STATE_READY){;}
-HAL_UART_Transmit_IT( &TerminalInterface, (uint8_t*)(Message_to_Terminal), LLL);
-//while(TerminalInterface.gState != HAL_UART_STATE_READY){;}
-#endif///Measurement_of_duration_canopen_app_process();
 
 //**********************************************************************************************
 
@@ -436,6 +357,13 @@ void CAN_interface_Test(void)
  for(uint16_t cnt=0;cnt<16;cnt++){Tx_Array[cnt]=Tx_Array[cnt]+7;}
 
  Message_2_UART_u32("\n\r Tx_Header.ExtId  = 0x%X%X \n\r ", Tx_Header.ExtId);
+ HAL_CAN_AddTxMessage( &hcan1,
+    		               &Tx_Header,
+ 							Tx_Array, &TxMailbox );
+
+ HAL_CAN_AddTxMessage( &hcan1,
+    		               &Tx_Header,
+ 							Tx_Array, &TxMailbox );
 
  if(HAL_CAN_AddTxMessage( &hcan1,
    		               &Tx_Header,
@@ -443,10 +371,10 @@ void CAN_interface_Test(void)
  	 )
 	  {  /* Wait transmission complete */
 	  //while(HAL_CAN_GetTxMailboxesFreeLevel(&hcan1) != 3) {}
-		  for(uint8_t cnt=0;cnt<22;cnt++)
+		  for(uint16_t cnt=0;cnt<32;cnt++)
 		  {
-			   HAL_GPIO_TogglePin(LED2_GPIO_Port, LED2_Pin);//LED2_Pin//yellow
-		   HAL_Delay(46);
+			HAL_GPIO_TogglePin(LED2_GPIO_Port, LED2_Pin);//LED2_Pin//yellow
+		   HAL_Delay(16);
 		  }
 		   HAL_GPIO_WritePin(LED2_GPIO_Port, LED2_Pin,GPIO_PIN_SET);//LED2_Pin//yellow
 
@@ -557,23 +485,6 @@ void Board_Name_to_Terminal(void)
 	HAL_UART_Transmit_DMA( &TerminalInterface, (uint8_t*)(Array_for_Messages), 6);
 	while(TerminalInterface.gState != HAL_UART_STATE_READY){;}
 
-
-
-
-
-//HAL_UART_Transmit_DMA( &TerminalInterface, (uint8_t*)(Macro_Date + Lng -8), 3);
-//while(TerminalInterface.gState != HAL_UART_STATE_READY){;}
-//
-//HAL_UART_Transmit_DMA( &TerminalInterface, (uint8_t*)(Macro_Date + Lng -3), 3);
-//while(TerminalInterface.gState != HAL_UART_STATE_READY){;}
-
-
-
-//HAL_UART_Transmit_DMA( &TerminalInterface, (uint8_t*)(__TIME__), sizeof(__TIME__));
-//while(TerminalInterface.gState != HAL_UART_STATE_READY){;}
-//
-//HAL_UART_Transmit_DMA( &TerminalInterface, (uint8_t*)(Macro_Date), sizeof(__DATE__));
-//while(TerminalInterface.gState != HAL_UART_STATE_READY){;}
 }
 
 /////////////////////////////////////////////////////////////////////
@@ -630,61 +541,6 @@ void Board_Name_to_Terminal(void)
   }
 
 
-  ///////////////////////////////////////////////////////////////////////////////
-//  void Datum_Time_from_PC(void)
-//  {
-//	  RTC_DateTypeDef Date_Upd;
-//	  RTC_TimeTypeDef sTime_Set;// = {19, 24, 0,0,0,0,0};; // ={0,0,0};      ///19h16min
-//
-//	  char Macro_Time[] = {__TIME__};
-//	  char Macro_Date[] = {__DATE__};
-//	  uint16_t Lng =  sizeof(__DATE__);
-//	  //uint16_t Lng_T =  sizeof(__TIME__);
-//	  Date_Upd.Year = (*(Macro_Date + Lng -2)-0x30)*10 + (*(Macro_Date + Lng -1)-0x30)*1;
-//	  if(
-//			  *(Macro_Date + Lng -8)==0x31
-//			  ||
-//			  *(Macro_Date + Lng -8)==0x31
-//		){
-//		   Date_Upd.Date = (*(Macro_Date + Lng -8)-0x30)*10 + (*(Macro_Date + Lng -7)-0x30)*1;
-//	  	 } else {
-//	  		 	 Date_Upd.Date = *(Macro_Date + Lng -7)-0x30;
-//	  	 	    }
-//
-//
-//	  if(*(Macro_Date + 0)=='J')
-//	  {
-//	  	if(*(Macro_Date + 1)=='a'){Date_Upd.Month = 1;}
-//	  	if(*(Macro_Date + 2)=='n'){Date_Upd.Month = 6;}
-//	  	if(*(Macro_Date + 2)=='l'){Date_Upd.Month = 7;}
-//	  }
-//
-//	  if(*(Macro_Date + 0)=='F'){Date_Upd.Month = 2;}
-//
-//	  if(*(Macro_Date + 0)=='M')
-//	  	{
-//	  	if(*(Macro_Date + 2)=='r'){Date_Upd.Month = 3;}
-//	  	if(*(Macro_Date + 2)=='y'){Date_Upd.Month = 5;}
-//	  	}
-//
-//	  if(*(Macro_Date + 0)=='A')
-//	  {
-//	  	if(*(Macro_Date + 1)=='p'){Date_Upd.Month = 4;}
-//	  	if(*(Macro_Date + 1)=='u'){Date_Upd.Month = 8;}
-//	  }
-//
-//	  if(*(Macro_Date + 0)=='S'){Date_Upd.Month = 9;}
-//	  if(*(Macro_Date + 0)=='O'){Date_Upd.Month = 10;}
-//	  if(*(Macro_Date + 0)=='N'){Date_Upd.Month = 11;}
-//	  if(*(Macro_Date + 0)=='D'){Date_Upd.Month = 12;}
-//	  HAL_RTC_SetDate(&hrtc, &Date_Upd, RTC_FORMAT_BIN);
-//
-//	  	sTime_Set.Hours   = (*(Macro_Time+0)-0x30)*10 + (*(Macro_Time +1)-0x30)*1;
-//	  	sTime_Set.Minutes = (*(Macro_Time+3)-0x30)*10 + (*(Macro_Time +4)-0x30)*1;
-//	  	sTime_Set.Seconds = (*(Macro_Time+6)-0x30)*10 + (*(Macro_Time +7)-0x30)*1;
-//	  	HAL_RTC_SetTime(&hrtc, &sTime_Set,        RTC_FORMAT_BIN);
-//
-//  }
 
   ///////////////////////////////////////////////////////////////////////////////
 

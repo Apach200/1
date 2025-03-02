@@ -9,6 +9,6 @@
 ../User_functions/lcd.c:90:6:LCD_ini	8	static
 ../User_functions/lcd.c:115:6:Get_Date_to_LCD	24	static
 ../User_functions/lcd.c:133:6:Get_Time_to_LCD	24	static
-../User_functions/lcd.c:149:10:RTC_update_and_send2LCD	32	static
-../User_functions/lcd.c:191:6:Logo_to_1602LCD	48	static
-../User_functions/lcd.c:210:6:Datum_to_1602LCD	16	static
+../User_functions/lcd.c:150:10:RTC_update_and_send2LCD	32	static
+../User_functions/lcd.c:192:6:Logo_to_1602LCD	48	static
+../User_functions/lcd.c:211:6:Datum_to_1602LCD	16	static

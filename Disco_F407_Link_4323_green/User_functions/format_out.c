@@ -466,10 +466,12 @@ void Datum_Time_from_PC(
 	  if(*(Macro_Date + 0)=='D'){Date_Upd.Month = 12;}
 	  HAL_RTC_SetDate(&hrtc, &Date_Upd, RTC_FORMAT_BIN);
 
-	  	sTime_Set.Hours   = (*(Macro_Time+0)-0x30)*10 + (*(Macro_Time +1)-0x30)*1;
-	  	sTime_Set.Minutes = (*(Macro_Time+3)-0x30)*10 + (*(Macro_Time +4)-0x30)*1;
-	  	sTime_Set.Seconds = (*(Macro_Time+6)-0x30)*10 + (*(Macro_Time +7)-0x30)*1;
-	  	HAL_RTC_SetTime(&hrtc, &sTime_Set,        RTC_FORMAT_BIN);
+	  sTime_Set.Hours   = (*(Macro_Time+0)-0x30)*10 + (*(Macro_Time +1)-0x30)*1;
+	  sTime_Set.Minutes = (*(Macro_Time+3)-0x30)*10 + (*(Macro_Time +4)-0x30)*1;
+	  uint8_t SSec =  (*(Macro_Time+6)-0x30)*10 + (*(Macro_Time +7)-0x30)*1;
+	   if( SSec>39 ){SSec =57;}else{SSec +=15;}
+	  sTime_Set.Seconds = SSec;
+	  HAL_RTC_SetTime(&hrtc, &sTime_Set,RTC_FORMAT_BIN);
 
 	    HAL_RTC_GetDate(&hrtc, &Date_Upd, RTC_FORMAT_BIN);
 	    HAL_RTC_GetTime(&hrtc, &sTime_Set,        RTC_FORMAT_BIN);

@@ -145,10 +145,13 @@ void
 HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef* htim)
 {
 
-    if (htim == &htim4)
-    		{
-    		//canopen_app_interrupt();
-    		}
+if (htim == &htim4)
+		{
+		 if(HAL_CAN_AddTxMessage( &hcan1, &Tx_Header,Tx_Array, &TxMailbox )==HAL_OK )
+			 {   HAL_GPIO_TogglePin(LD3_GPIO_Port, LD3_Pin);//orange
+			  //HAL_GPIO_WritePin(LD3_GPIO_Port, LD3_Pin,GPIO_PIN_SET);//orange
+			 }
+	}
 
 }
 
@@ -205,33 +208,22 @@ int main(void)
 
   //	HAL_RTC_SetTime(&hrtc, &sTime,        RTC_FORMAT_BIN);
   //	HAL_RTC_SetDate(&hrtc, &DateToUpdate, RTC_FORMAT_BIN);
+  //Datum_Time_from_PC(DateToUpdate, sTime);
   HAL_RTC_GetDate(&hrtc, &DateToUpdate, RTC_FORMAT_BIN);
   HAL_RTC_GetTime(&hrtc, &sTime,        RTC_FORMAT_BIN);
 
   Encoder_Config();  // configure the encoders timer
   Encoder_Init();    // start the encoders timer
   LCD_ini();
-  // Logo_to_1602LCD();
   Datum_to_1602LCD();
-  //GPIO_Blink_Test(GPIOA, GPIO_PIN_7|GPIO_PIN_6, 25, 33); 						// for_STM32F4XX_Ali_pcb
-   GPIO_Blink_Test(GPIOD, GPIO_PIN_12|GPIO_PIN_13|GPIO_PIN_14|GPIO_PIN_15, 25, 33);// blink_at_Discovery_EVB
-  //UART_interface_Test(); //while(1){;}
+  GPIO_Blink_Test(GPIOD, GPIO_PIN_12|GPIO_PIN_13|GPIO_PIN_14|GPIO_PIN_15, 25, 33);// blink_at_Discovery_EVB
   CAN_interface_Test();
+  HAL_CAN_Start(&hcan1);
   HAL_TIM_Base_Start(&htim8);
   HAL_TIM_Base_Start_IT(&htim4);
   HAL_UART_Receive_DMA(&huart2, Array_from_Terminal, sizeof Array_from_Terminal );
   //HAL_Delay(1500);
   Board_Name_to_Terminal();
-  //OD_PERSIST_COMM.x1018_identity.serialNumber = HAL_GetUIDw0();
-//  Message_2_UART_u32(
-//		  	  	  	  "\n\r OD_PERSIST_COMM.x1018_identity.serialNumber",
-//					  HAL_GetUIDw0()
-//					  );
-
-
-
-
-
   /* USER CODE END 2 */
 
   /* Infinite loop */
@@ -241,18 +233,16 @@ HAL_Delay(1);
 HAL_GPIO_WritePin(GPIOD, GPIO_PIN_12, GPIO_PIN_RESET);//Green
 HAL_GPIO_WritePin(GPIOD, GPIO_PIN_13, GPIO_PIN_RESET);//Orange
 
- Local_Count=0;
+Local_Count=0;
 Ticks = HAL_GetTick();
 Ticks_2 = HAL_GetTick();
-
 DWT->CTRL |= 1 ; // Enable_the_Counter_of_Core_circles
 
 //**********************************************************************************************
 Ticks_2=HAL_GetTick();
-do
-{
 
-}while (HAL_GetTick() - Ticks_2<500);
+do{}while (HAL_GetTick() - Ticks_2<500);
+
 
 #if 0
 uint32_t Delta_T[4]={0};/////Measurement_of_duration_canopen_app_process();
@@ -261,7 +251,7 @@ uint32_t Delta_T[4]={0};/////Measurement_of_duration_canopen_app_process();
 //**********************************************************************************************
 Local_Count=0;
 Ticks_2=HAL_GetTick();
- while (0)		/// 	while (HAL_GetTick() - Ticks_2<4123) //   	while (HAL_GetTick() - Ticks_2<5123)	///
+ while (1)		/// 	while (HAL_GetTick() - Ticks_2<4123) //   	while (HAL_GetTick() - Ticks_2<5123)	///
 	{
 			switch (Local_Count)
 				{
@@ -302,59 +292,12 @@ Ticks_2=HAL_GetTick();
 					break;
 		}///switch (Local_Count)
 
-		HAL_Delay(4);
+		//HAL_Delay(4);
 		Encoder_to_LCD();
 		RTC_update_and_Terminal(1999);
 
 	}///while (HAL_GetTick() - Ticks<4123)
 
-
-
-
-#if 0
-///Measurement_of_duration_canopen_app_process_Results
-uint16_t LLL = sprintf(
-					Message_to_Terminal,
-					"\n\r\n\r Duration_of_the_CO_process*6nc = %d\n\r",
-					(uint16_t)Duration_of_the_CO_process*6
-					);
-
- LLL = LLL + sprintf(
-					Message_to_Terminal+LLL,
-					"\n\r Delta_T[0] = 0x%04X%04X -> %d ns\n\r",
-					(uint16_t)(Delta_T[0] >> 16 ),
-					(uint16_t)(Delta_T[0] & 0x0FFFF ),
-					(uint16_t)(((float)Delta_T[0]*6.3333) )
-					);
-
- LLL = LLL + sprintf(
-					Message_to_Terminal+LLL,
-					"\n\r Delta_T[0] = 0x%04X%04X -> %d ns\n\r",
-					(uint16_t)(Delta_T[1] >> 16 ),
-					(uint16_t)(Delta_T[1] & 0x0FFFF ),
-					(uint16_t)(((float)Delta_T[1]*6.3333) )
-					);
-
- LLL = LLL + sprintf(
-					Message_to_Terminal+LLL,
-					"\n\r Delta_T[0] = 0x%04X%04X -> %d ns\n\r",
-					(uint16_t)(Delta_T[2] >> 16 ),
-					(uint16_t)(Delta_T[2] & 0x0FFFF ),
-					(uint16_t)(((float)Delta_T[2]*6.3333) )
-					);
-
- LLL = LLL + sprintf(
-					Message_to_Terminal+LLL,
-					"\n\r Delta_T[0] = 0x%04X%04X -> %d ns\n\r\n\r\n\r\n\r\n\r\n\r\n\r",
-					(uint16_t)(Delta_T[3] >> 16 ),
-					(uint16_t)(Delta_T[3] & 0x0FFFF ),
-					(uint16_t)(((float)Delta_T[3]*6.3333) )
-					);
-
-while(TerminalInterface.gState != HAL_UART_STATE_READY){;}
-HAL_UART_Transmit_IT( &TerminalInterface, (uint8_t*)(Message_to_Terminal), LLL);
-//while(TerminalInterface.gState != HAL_UART_STATE_READY){;}
-#endif///Measurement_of_duration_canopen_app_process();
 
 //**********************************************************************************************
 Tx_Array[0]=0;
@@ -456,7 +399,7 @@ if(
   ){;}
 
 
-HAL_Delay(16);
+HAL_Delay(32);
 
     /* USER CODE END WHILE */
 
@@ -518,32 +461,33 @@ void SystemClock_Config(void)
 void CAN_interface_Test(void)
 {
 
-	 Tx_Header.IDE    = CAN_ID_EXT;
-	 Tx_Header.DLC    = 8;
-	 Tx_Header.StdId  = 0;
-	 Tx_Header.ExtId  = 0x4323;
+	 //Tx_Header.IDE    = CAN_ID_EXT;
+	 Tx_Header.IDE    = CAN_ID_STD;
+	 Tx_Header.DLC    = 2;
+	 Tx_Header.StdId  = 0x723;
+	 Tx_Header.ExtId  = 0;
 	 Tx_Header.RTR    = CAN_RTR_DATA;
 
  HAL_CAN_Start(&hcan1);
- HAL_Delay(1500);
- for(uint16_t cnt=0;cnt<16;cnt++){Tx_Array[cnt]=Tx_Array[cnt]+3;}
-
- Message_2_UART_u32("\n\r Tx_Header.ExtId  = 0x%X%X \n\r ", Tx_Header.ExtId);
-
- if(HAL_CAN_AddTxMessage( &hcan1,
-   		               &Tx_Header,
-							Tx_Array, &TxMailbox )==HAL_OK
- 	 )
-	  {  /* Wait transmission complete */
-	  //while(HAL_CAN_GetTxMailboxesFreeLevel(&hcan1) != 3) {}
-		  for(uint8_t cnt=0;cnt<22;cnt++)
-		  {
-			   HAL_GPIO_TogglePin(LD3_GPIO_Port, LD3_Pin);//orange
-		   HAL_Delay(46);
-		  }
-		   HAL_GPIO_WritePin(LD3_GPIO_Port, LD3_Pin,GPIO_PIN_SET);//orange
-
-	  }
+// HAL_Delay(1500);
+// for(uint16_t cnt=0;cnt<16;cnt++){Tx_Array[cnt]=Tx_Array[cnt]+3;}
+//
+// Message_2_UART_u32("\n\r Tx_Header.ExtId  = 0x%X%X \n\r ", Tx_Header.ExtId);
+//
+// if(HAL_CAN_AddTxMessage( &hcan1,
+//   		               &Tx_Header,
+//							Tx_Array, &TxMailbox )==HAL_OK
+// 	 )
+//	  {  /* Wait transmission complete */
+//	  //while(HAL_CAN_GetTxMailboxesFreeLevel(&hcan1) != 3) {}
+//		  for(uint8_t cnt=0;cnt<22;cnt++)
+//		  {
+//			   HAL_GPIO_TogglePin(LD3_GPIO_Port, LD3_Pin);//orange
+//		   HAL_Delay(46);
+//		  }
+//		   HAL_GPIO_WritePin(LD3_GPIO_Port, LD3_Pin,GPIO_PIN_SET);//orange
+//
+//	  }
 }
 
 //////////////////////////////////////////////

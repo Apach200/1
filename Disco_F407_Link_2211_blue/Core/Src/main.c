@@ -93,7 +93,7 @@ float ChipTemperature;
 
 
 /////////////////////////////////////////Istarik_begin
-char trans_str[128] = {0,};
+char trans_str[128] = {0};
 CAN_TxHeaderTypeDef TxHeader;
 CAN_RxHeaderTypeDef RxHeader;
 uint8_t TxData[16]={8,8,8,8,8,8,8,8,8,8,8,8,8,8,8,8};
@@ -200,6 +200,8 @@ void HAL_CAN_RxFifo0MsgPendingCallback(CAN_HandleTypeDef *hcan)
 HAL_UART_Transmit(&huart2, (uint8_t*)trans_str, Length_of_Message,10);
 }
 
+
+
 void HAL_CAN_RxFifo1MsgPendingCallback(CAN_HandleTypeDef *hcan)
 {
     if(HAL_CAN_GetRxMessage(hcan, CAN_RX_FIFO1, &RxHeader, RxData) == HAL_OK)
@@ -207,7 +209,7 @@ void HAL_CAN_RxFifo1MsgPendingCallback(CAN_HandleTypeDef *hcan)
     	//count0++;
 //        if(RxHeader.ExtId == 0x00014323)
 //        { }
-        HAL_GPIO_TogglePin(GPIOD, GPIO_PIN_13);
+        HAL_GPIO_TogglePin(GPIOD, GPIO_PIN_12);
 //        HAL_GPIO_WritePin(GPIOD, GPIO_PIN_12,GPIO_PIN_RESET);
 //            HAL_GPIO_WritePin(GPIOD, GPIO_PIN_14,GPIO_PIN_SET);
         Length_of_Message=sprintf(
@@ -218,23 +220,14 @@ void HAL_CAN_RxFifo1MsgPendingCallback(CAN_HandleTypeDef *hcan)
 								 RxData[0]//,RxData[1],RxData[2],RxData[3],RxData[4],RxData[5],RxData[6],RxData[7]
 								);
 
-
-//        else if(RxHeader.ExtId == 0x00024323)
-//        {
-//            HAL_GPIO_WritePin(GPIOD, GPIO_PIN_14,GPIO_PIN_RESET);
-//            HAL_GPIO_WritePin(GPIOD, GPIO_PIN_12,GPIO_PIN_SET);
-//            Length_of_Message=sprintf(
-//    								 trans_str,
-//    								// "ID %04X%04X 0x%02X 0x%02X 0x%02X 0x%02X 0x%02X 0x%02X 0x%02X 0x%02X  \n",
-//    								 "ID %04X%04X \n",
-//    								 (uint16_t)(RxHeader.ExtId>>16),(uint16_t)(RxHeader.ExtId & 0x0FFFF)//,
-//    								 //RxData[0],RxData[1],RxData[2],RxData[3],RxData[4],RxData[5],RxData[6],RxData[7]
-//    								);
-//        	HAL_UART_Transmit(&huart2, (uint8_t*)trans_str, Length_of_Message, 10);
-//        }
          HAL_UART_Transmit(&huart2, (uint8_t*)trans_str, Length_of_Message, 10);
 
     }
+
+
+
+
+
 }
 
 
@@ -320,9 +313,9 @@ int main(void)
 
   //	HAL_RTC_SetTime(&hrtc, &sTime,        RTC_FORMAT_BIN);
   //	HAL_RTC_SetDate(&hrtc, &DateToUpdate, RTC_FORMAT_BIN);
-  HAL_RTC_GetDate(&hrtc, &DateToUpdate, RTC_FORMAT_BIN);
-  HAL_RTC_GetTime(&hrtc, &sTime,        RTC_FORMAT_BIN);
-
+//  HAL_RTC_GetDate(&hrtc, &DateToUpdate, RTC_FORMAT_BIN);
+//  HAL_RTC_GetTime(&hrtc, &sTime,        RTC_FORMAT_BIN);
+  //Datum_Time_from_PC(DateToUpdate, sTime);
   Encoder_Config();  // configure the encoders timer
   Encoder_Init();    // start the encoders timer
   LCD_ini();
@@ -330,8 +323,6 @@ int main(void)
   Datum_to_1602LCD();
   //GPIO_Blink_Test(GPIOA, GPIO_PIN_7|GPIO_PIN_6, 25, 33); 						// for_STM32F4XX_Ali_pcb
    GPIO_Blink_Test(GPIOD, GPIO_PIN_12|GPIO_PIN_13|GPIO_PIN_14|GPIO_PIN_15, 10, 20);// blink_at_Discovery_EVB
-
-
 
   HAL_TIM_Base_Start(&htim8);
   HAL_TIM_Base_Start_IT(&htim4);
@@ -341,8 +332,7 @@ int main(void)
 //CAN_Config();
 HAL_Delay(1);
 
-
-  /////////////////////////////////////////Istarik_begin
+/////////////////////////////////////////Istarik_begin
 
   TxHeader.StdId = 0;
   TxHeader.ExtId = 0x0378;
@@ -366,7 +356,6 @@ HAL_Delay(1);
 								  | CAN_IT_BUSOFF
 								  | CAN_IT_LAST_ERROR_CODE
 							  );
-
 
   HAL_GPIO_WritePin(GPIOD, GPIO_PIN_12,GPIO_PIN_RESET);//Green
   HAL_GPIO_WritePin(GPIOD, GPIO_PIN_13,GPIO_PIN_RESET);//Orange
@@ -397,7 +386,7 @@ HAL_Delay(1);
 //
 //      HAL_Delay(500);
 		Encoder_to_LCD();
-//		RTC_update_and_Terminal(1999);
+		RTC_update_and_Terminal(1999);
 
 //		if(RxData[0]>252)
 //			{
@@ -432,9 +421,6 @@ if(HAL_GetTick()==2048+2048)
   }
 
   /////////////////////////////////////////Istarik_end
-
-
-
 
 
   /* USER CODE END 2 */

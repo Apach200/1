@@ -1,6 +1,6 @@
 ################################################################################
 # Automatically-generated file. Do not edit!
-# Toolchain: GNU Tools for STM32 (11.3.rel1)
+# Toolchain: GNU Tools for STM32 (12.3.rel1)
 ################################################################################
 
 -include ../makefile.init
@@ -57,6 +57,9 @@ default.size.stdout \
 OBJDUMP_LIST += \
 Disco_F407_Link_4323_green.list \
 
+OBJCOPY_HEX += \
+Disco_F407_Link_4323_green.hex \
+
 
 # All Target
 all: main-build
@@ -66,7 +69,7 @@ main-build: Disco_F407_Link_4323_green.elf secondary-outputs
 
 # Tool invocations
 Disco_F407_Link_4323_green.elf Disco_F407_Link_4323_green.map: $(OBJS) $(USER_OBJS) D:\Narodstream\1\Disco_F407_Link_4323_green\STM32F407VGTX_FLASH.ld makefile objects.list $(OPTIONAL_TOOL_DEPS)
-	arm-none-eabi-gcc -o "Disco_F407_Link_4323_green.elf" @"objects.list" $(USER_OBJS) $(LIBS) -mcpu=cortex-m4 -T"D:\Narodstream\1\Disco_F407_Link_4323_green\STM32F407VGTX_FLASH.ld" --specs=nosys.specs -Wl,-Map="Disco_F407_Link_4323_green.map" -Wl,--gc-sections -static --specs=nano.specs -mfpu=fpv4-sp-d16 -mfloat-abi=hard -mthumb -Wl,--start-group -lc -lm -Wl,--end-group
+	arm-none-eabi-gcc -o "Disco_F407_Link_4323_green.elf" @"objects.list" $(USER_OBJS) $(LIBS) -mcpu=cortex-m4 -T"D:\Narodstream\1\Disco_F407_Link_4323_green\STM32F407VGTX_FLASH.ld" --specs=nosys.specs -Wl,-Map="Disco_F407_Link_4323_green.map" -Wl,--gc-sections -static --specs=nano.specs -mfpu=fpv4-sp-d16 -mfloat-abi=hard -mthumb -u _printf_float -Wl,--start-group -lc -lm -Wl,--end-group
 	@echo 'Finished building target: $@'
 	@echo ' '
 
@@ -80,12 +83,17 @@ Disco_F407_Link_4323_green.list: $(EXECUTABLES) makefile objects.list $(OPTIONAL
 	@echo 'Finished building: $@'
 	@echo ' '
 
+Disco_F407_Link_4323_green.hex: $(EXECUTABLES) makefile objects.list $(OPTIONAL_TOOL_DEPS)
+	arm-none-eabi-objcopy  -O ihex $(EXECUTABLES) "Disco_F407_Link_4323_green.hex"
+	@echo 'Finished building: $@'
+	@echo ' '
+
 # Other Targets
 clean:
-	-$(RM) Disco_F407_Link_4323_green.elf Disco_F407_Link_4323_green.list Disco_F407_Link_4323_green.map default.size.stdout
+	-$(RM) Disco_F407_Link_4323_green.elf Disco_F407_Link_4323_green.hex Disco_F407_Link_4323_green.list Disco_F407_Link_4323_green.map default.size.stdout
 	-@echo ' '
 
-secondary-outputs: $(SIZE_OUTPUT) $(OBJDUMP_LIST)
+secondary-outputs: $(SIZE_OUTPUT) $(OBJDUMP_LIST) $(OBJCOPY_HEX)
 
 fail-specified-linker-script-missing:
 	@echo 'Error: Cannot find the specified linker script. Check the linker settings in the build configuration.'
