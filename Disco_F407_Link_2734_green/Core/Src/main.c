@@ -89,7 +89,7 @@ uint32_t Duration_of_the_CO_process;
 uint64_t Count_of_while1=0;
 float ChipTemperature;
 
-
+CAN_RxHeaderTypeDef Rx_Header;
 CAN_TxHeaderTypeDef Tx_Header;
 uint32_t            TxMailbox;
 uint32_t            tmp32u_1   = 0x1e1f1a1b;
@@ -140,7 +140,36 @@ Encoder_Status encoderStatus;
 
 /* Private user code ---------------------------------------------------------*/
 /* USER CODE BEGIN 0 */
-/* Timer interrupt function executes every 1 ms */
+
+void HAL_CAN_RxFifo0MsgPendingCallback(CAN_HandleTypeDef *hcan)
+{
+	if(hcan->Instance == hcan2.Instance){}
+    if(HAL_CAN_GetRxMessage(hcan, CAN_RX_FIFO0, &Rx_Header, Rx_Array) == HAL_OK) {;}else{;}
+}
+
+void HAL_CAN_RxFifo1MsgPendingCallback(CAN_HandleTypeDef *hcan)
+{
+    if(HAL_CAN_GetRxMessage(hcan, CAN_RX_FIFO1, &Rx_Header, Rx_Array) == HAL_OK) { }else{;}
+}
+
+
+void HAL_CAN_TxMailbox0CompleteCallback(CAN_HandleTypeDef *hcan){}
+
+void HAL_CAN_TxMailbox1CompleteCallback(CAN_HandleTypeDef *hcan){;}
+
+void HAL_CAN_TxMailbox2CompleteCallback(CAN_HandleTypeDef *hcan){}
+
+void HAL_CAN_ErrorCallback(CAN_HandleTypeDef *hcan)
+{
+	uint16_t LLL;
+    uint32_t er = HAL_CAN_GetError(hcan);
+    HAL_GPIO_WritePin(GPIOD, GPIO_PIN_15,GPIO_PIN_SET);
+    LLL=sprintf(Message_to_Terminal,"ER CAN %lu %08lX", er, er);
+    HAL_UART_Transmit(&huart2, (uint8_t*)Message_to_Terminal, LLL, 100);
+    Error_Handler();
+}
+
+
 void
 HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef* htim)
 {
@@ -211,7 +240,6 @@ int main(void)
   Encoder_Config();  // configure the encoders timer
   Encoder_Init();    // start the encoders timer
   LCD_ini();
-  // Logo_to_1602LCD();
   Datum_to_1602LCD();
   //GPIO_Blink_Test(GPIOA, GPIO_PIN_7|GPIO_PIN_6, 25, 33); 						// for_STM32F4XX_Ali_pcb
   // GPIO_Blink_Test(GPIOD, GPIO_PIN_12|GPIO_PIN_13|GPIO_PIN_14|GPIO_PIN_15, 25, 33);// blink_at_Discovery_EVB
@@ -222,13 +250,6 @@ int main(void)
   HAL_UART_Receive_DMA(&huart2, Array_from_Terminal, sizeof Array_from_Terminal );
   //HAL_Delay(1500);
   Board_Name_to_Terminal();
-  //OD_PERSIST_COMM.x1018_identity.serialNumber = HAL_GetUIDw0();
-//  Message_2_UART_u32(
-//		  	  	  	  "\n\r OD_PERSIST_COMM.x1018_identity.serialNumber",
-//					  HAL_GetUIDw0()
-//					  );
-
-
 
   /* USER CODE END 2 */
 
@@ -237,6 +258,9 @@ int main(void)
 
 HAL_Delay(1);
 HAL_GPIO_WritePin(GPIOD, GPIO_PIN_12, GPIO_PIN_RESET);//Green
+HAL_GPIO_WritePin(GPIOD, GPIO_PIN_13, GPIO_PIN_RESET);//or
+HAL_GPIO_WritePin(GPIOD, GPIO_PIN_14, GPIO_PIN_RESET);//
+HAL_GPIO_WritePin(GPIOD, GPIO_PIN_15, GPIO_PIN_RESET);//
 
  Local_Count=0;
 Ticks = HAL_GetTick();

@@ -115,7 +115,7 @@ void LCD_ini(void)
 void Get_Date_to_LCD(uint8_t X,uint8_t Y)
 {
 ///Date output
-	static	char String_to_LCD[16]={};
+	static	char String_to_LCD[32]={};
 	//uint16_t Length_Msg;
 	static	RTC_DateTypeDef DateUpdated = {0};
 	static	RTC_TimeTypeDef TimeUpdated = {0};
@@ -132,7 +132,7 @@ void Get_Date_to_LCD(uint8_t X,uint8_t Y)
 //////////////////////////////////////////////////
 void Get_Time_to_LCD(uint8_t X,uint8_t Y)
 {
-static	char String_to_LCD[16]={};
+static	char String_to_LCD[32]={};
 	//uint16_t Length_Msg;
 static	RTC_DateTypeDef DateUpdated = {0};
 static	RTC_TimeTypeDef TimeUpdated = {0};
@@ -153,7 +153,7 @@ uint16_t RTC_update_and_send2LCD(uint32_t Period_update_ms,uint8_t X, uint8_t Y)
 	static uint8_t Uhr=0;
 	static	uint32_t Tick_old=0;
     uint16_t cnt=0;
-    static	char String_to_LCD[16]={};
+    static	char String_to_LCD[32]={};
 extern    RTC_DateTypeDef DateToUpdate ;
 extern       RTC_TimeTypeDef sTime;
     //					    0,//uint8_t Hours; Max_Data=12 if the RTC_HourFormat_12; Max_Data=23 if the RTC_HourFormat_24

@@ -62,7 +62,7 @@ void MX_CAN1_Init(void)
   }
   /* USER CODE BEGIN CAN1_Init 2 */
 
-//	CAN_FILTERMODE_IDMASK		CAN_FILTERMODE_IDLIST
+//	CAN_FILTERMODE_IDMASK		CAN_FILTERMODE_IDLIST  	  CAN_FilterTypeDef  sFilterConfig;
   sFilterConfig.FilterMode  = CAN_FILTERMODE_IDMASK;
   sFilterConfig.FilterScale = CAN_FILTERSCALE_32BIT;
   sFilterConfig.SlaveStartFilterBank = 0;

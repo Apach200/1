@@ -89,8 +89,8 @@ uint32_t Duration_of_the_CO_process;
 uint64_t Count_of_while1=0;
 float ChipTemperature;
 
-
 CAN_TxHeaderTypeDef Tx_Header;
+CAN_RxHeaderTypeDef Rx_Header;
 uint32_t            TxMailbox;
 uint32_t            tmp32u_1   = 0x1e1f1a1b;
 uint32_t            tmp32u_0   = 0x0e0f0a0b;
@@ -124,6 +124,10 @@ const uint16_t Datum[64]={0,0,
 uint8_t Node_ID_Read=0xff;
 uint32_t Data_u32;
 
+uint8_t CAN_ID_0867[8]={0x67,0x08,0x00,0x10,0x00,0x00,0x00,0x00};///0x10000867
+uint32_t CAN_ID_master = 0x10002211;
+uint16_t Connect_Setting=0;
+
 extern TIM_HandleTypeDef htim4;
 
 /* USER CODE END PV */
@@ -132,6 +136,7 @@ extern TIM_HandleTypeDef htim4;
 void SystemClock_Config(void);
 /* USER CODE BEGIN PFP */
 void CAN_interface_Test(void);
+static void CAN_Config(void);
 void UART_interface_Test(void);
 void Board_Name_to_Terminal(void);
 int16_t Encoder_to_LCD(void);
@@ -142,7 +147,71 @@ Encoder_Status encoderStatus;
 
 /* Private user code ---------------------------------------------------------*/
 /* USER CODE BEGIN 0 */
-/* Timer interrupt function executes every 1 ms */
+
+void HAL_CAN_RxFifo0MsgPendingCallback(CAN_HandleTypeDef *hcan)
+{
+	if(hcan->Instance == hcan2.Instance){}
+    if(HAL_CAN_GetRxMessage(hcan, CAN_RX_FIFO0, &Rx_Header, Rx_Array) == HAL_OK)
+    {
+		 if(
+			  (Connect_Setting == 0 )
+			&&(Rx_Header.ExtId==CAN_ID_master)
+			&&(Rx_Array[0]!=CAN_ID_0867[0])
+			&&(Rx_Array[1]!=CAN_ID_0867[1])
+			)
+			 {
+			 Tx_Header.RTR = CAN_RTR_DATA;
+			 Tx_Header.DLC = 8;
+			 Tx_Header.IDE = CAN_ID_EXT;
+			 Tx_Header.ExtId=0x000000;//29bit
+			 HAL_CAN_AddTxMessage(&hcan1, &Tx_Header, CAN_ID_0867, &TxMailbox);
+			 }
+
+
+		 if(
+			  ( Connect_Setting==0 )
+			&&(Rx_Header.ExtId==CAN_ID_master)		//Rx_Header.FilterMatchIndex
+			&&(Rx_Array[0]==CAN_ID_0867[0])
+			&&(Rx_Array[1]==CAN_ID_0867[1])
+			)
+			 {
+
+			 Connect_Setting = 5;
+	//    	 Tx_Header.RTR = CAN_RTR_DATA;
+	//    	 Tx_Header.DLC = 8;
+	//    	 Tx_Header.IDE = CAN_ID_EXT;
+	//    	 Tx_Header.ExtId=(uint32_t)CAN_ID_3032[0];//29bit
+	//    	 HAL_CAN_AddTxMessage(&hcan1, Tx_Header, CAN_ID_3032, TxMailbox);
+			 }
+    }
+
+}////HAL_CAN_RxFifo0MsgPendingCallback()
+
+
+
+void HAL_CAN_RxFifo1MsgPendingCallback(CAN_HandleTypeDef *hcan)
+{
+    if(HAL_CAN_GetRxMessage(hcan, CAN_RX_FIFO1, &Rx_Header, Rx_Array) == HAL_OK) { }else{;}
+}
+
+
+void HAL_CAN_TxMailbox0CompleteCallback(CAN_HandleTypeDef *hcan){}
+
+void HAL_CAN_TxMailbox1CompleteCallback(CAN_HandleTypeDef *hcan){;}
+
+void HAL_CAN_TxMailbox2CompleteCallback(CAN_HandleTypeDef *hcan){}
+
+void HAL_CAN_ErrorCallback(CAN_HandleTypeDef *hcan)
+{
+	uint16_t LLL;
+    uint32_t er = HAL_CAN_GetError(hcan);
+    HAL_GPIO_WritePin(GPIOD, GPIO_PIN_15,GPIO_PIN_SET);
+    LLL=sprintf(Message_to_Terminal,"ER CAN %lu %08lX", er, er);
+    HAL_UART_Transmit(&huart2, (uint8_t*)Message_to_Terminal, LLL, 100);
+    Error_Handler();
+}
+
+
 void
 HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef* htim)
 {
@@ -239,6 +308,11 @@ do
 }while (HAL_GetTick() - Ticks_2<500);
 
 
+CAN_Config();
+while(Connect_Setting<5)
+{
+
+}
 
 //**********************************************************************************************
 Local_Count=0;
@@ -356,7 +430,7 @@ void CAN_interface_Test(void)
  HAL_Delay(1500);
  for(uint16_t cnt=0;cnt<16;cnt++){Tx_Array[cnt]=Tx_Array[cnt]+7;}
 
- Message_2_UART_u32("\n\r Tx_Header.ExtId  = 0x%X%X \n\r ", Tx_Header.ExtId);
+ Message_2_UART_u32("Tx_Header.ExtId", Tx_Header.ExtId);
  HAL_CAN_AddTxMessage( &hcan1,
     		               &Tx_Header,
  							Tx_Array, &TxMailbox );
@@ -392,15 +466,12 @@ void UART_interface_Test(void)
 								 );
 	  TerminalInterface.gState = HAL_UART_STATE_READY;
 	  HAL_UART_Transmit_DMA( &TerminalInterface, (uint8_t*)Message_to_Terminal, Length_of_Message);
-
 //    Test_Terminal__HEX
-//
-//	  HAL_Delay(500);
+////	  HAL_Delay(500);
 //	  Local_Count = sizeof String_L;
 //	  String_L[Local_Count-1] = 0x0d;
 //	  TerminalInterface.gState = HAL_DMA_STATE_READY;
 //	  HAL_UART_Transmit_DMA( &TerminalInterface, (uint8_t*)(String_L), Local_Count);
-
 }
 
 
@@ -419,15 +490,10 @@ void Board_Name_to_Terminal(void)
 	char Array_for_Messages[128]={};
 	uint16_t Msg_Length;
 //	uint32_t Chip_ID_96bit[4]={};
-//	uint16_t  *pChip_ID_96bit =(uint16_t*)Chip_ID_96bit ;
-
 //	Chip_ID_96bit[0] = HAL_GetUIDw0();
 //	Chip_ID_96bit[1] = HAL_GetUIDw1();
 //	Chip_ID_96bit[2] = HAL_GetUIDw2();
-
-
-
-
+//	uint16_t  *pChip_ID_96bit =(uint16_t*)Chip_ID_96bit ;
 	Msg_Length = sizeof(Message_0);
 	while(TerminalInterface.gState != HAL_UART_STATE_READY){;}
 	HAL_UART_Transmit_DMA( &TerminalInterface, (uint8_t*)Message_0, Msg_Length);
@@ -484,7 +550,6 @@ void Board_Name_to_Terminal(void)
 	Array_for_Messages[4]=0x0a;		Array_for_Messages[5]=0x0d;
 	HAL_UART_Transmit_DMA( &TerminalInterface, (uint8_t*)(Array_for_Messages), 6);
 	while(TerminalInterface.gState != HAL_UART_STATE_READY){;}
-
 }
 
 /////////////////////////////////////////////////////////////////////
@@ -543,7 +608,68 @@ void Board_Name_to_Terminal(void)
 
 
   ///////////////////////////////////////////////////////////////////////////////
+  static void CAN_Config(void)
+  {
+	  	CAN_FilterTypeDef  sFilterConfig;
+	    sFilterConfig.FilterMode  = CAN_FILTERMODE_IDMASK;
+	    sFilterConfig.FilterScale = CAN_FILTERSCALE_32BIT;
+	    sFilterConfig.SlaveStartFilterBank = 0;
+	    sFilterConfig.FilterActivation = ENABLE;
+//
+//	    sFilterConfig.FilterBank = 0;
+//	    sFilterConfig.FilterFIFOAssignment = CAN_RX_FIFO0;
+//	    sFilterConfig.FilterIdHigh = 0x0100<<5;
+//	    sFilterConfig.FilterIdLow  = 0;
+//	    sFilterConfig.FilterMaskIdHigh =  0x07f8<<5;
+//	    sFilterConfig.FilterMaskIdLow  =  0;
+//	    if(HAL_CAN_ConfigFilter(&hcan1, &sFilterConfig) != HAL_OK) { Error_Handler(); }
+//
+//	    sFilterConfig.FilterMode  = CAN_FILTERMODE_IDMASK;
+//	    sFilterConfig.FilterFIFOAssignment = CAN_RX_FIFO0;
+//	    sFilterConfig.FilterBank = 1;
+//	    sFilterConfig.FilterIdHigh = 0x0200<<5;
+//	    sFilterConfig.FilterIdLow  = 0;
+//	    sFilterConfig.FilterMaskIdHigh =  0x07f8<<5;
+//	    sFilterConfig.FilterMaskIdLow  =  0;
+//	    if(HAL_CAN_ConfigFilter(&hcan1, &sFilterConfig) != HAL_OK) { Error_Handler(); }
 
+//	    sFilterConfig.FilterMode  = CAN_FILTERMODE_IDLIST;
+//	    sFilterConfig.FilterFIFOAssignment = CAN_RX_FIFO0;
+//	    sFilterConfig.FilterBank = 2;
+//	    sFilterConfig.FilterIdHigh =     (uint16_t) (0x1010000>>13);
+//	    sFilterConfig.FilterIdLow  =    ((uint16_t) (0x1010000<<3))|0x0004;
+//	    sFilterConfig.FilterMaskIdHigh = (uint16_t) (0x1010000>>13);
+//	    sFilterConfig.FilterMaskIdLow  = ((uint16_t)(0x1010000<<3))|0x0004;
+//	    if(HAL_CAN_ConfigFilter(&hcan1, &sFilterConfig) != HAL_OK) { Error_Handler(); }
+
+	    sFilterConfig.FilterMode  = CAN_FILTERMODE_IDLIST;
+	    sFilterConfig.FilterFIFOAssignment = CAN_RX_FIFO0;
+	    sFilterConfig.FilterBank = 3;
+	    sFilterConfig.FilterIdHigh 		=(uint16_t)  ( CAN_ID_master>>13);
+	    sFilterConfig.FilterIdLow  		=(( (uint16_t)CAN_ID_master )<<3)|0x0004;
+	    sFilterConfig.FilterMaskIdHigh 	= (uint16_t) ( CAN_ID_0867[0]>>13);
+	    sFilterConfig.FilterMaskIdLow  	=  (( (uint16_t)CAN_ID_0867[0] )<<3)|0x0004;
+	    if(HAL_CAN_ConfigFilter(&hcan1, &sFilterConfig) != HAL_OK) { Error_Handler(); }
+
+//	    sFilterConfig.FilterMode  = CAN_FILTERMODE_IDMASK;
+//	    sFilterConfig.FilterFIFOAssignment = CAN_RX_FIFO0;
+//	    sFilterConfig.FilterBank = 11;
+//	    sFilterConfig.FilterIdHigh =(uint16_t) ( 0x10700000>>13);
+//	    sFilterConfig.FilterIdLow  =((uint16_t) (0x10700000<<3))|0x0004;
+//	    sFilterConfig.FilterMaskIdHigh = (uint16_t) ( 0x10700000>>13);
+//	    sFilterConfig.FilterMaskIdLow  = ((uint16_t) (0x10700000<<3))|0x0004;
+//	    if(HAL_CAN_ConfigFilter(&hcan1, &sFilterConfig) != HAL_OK) { Error_Handler(); }
+//
+//	    sFilterConfig.FilterMode  = CAN_FILTERMODE_IDMASK;
+//	    sFilterConfig.FilterFIFOAssignment = CAN_RX_FIFO1;
+//	    sFilterConfig.FilterBank = 12;
+//	    sFilterConfig.FilterIdHigh =(uint16_t) ( 0x10600000>>13);
+//	    sFilterConfig.FilterIdLow  =((uint16_t) (0x10600000<<3))|0x0004;
+//	    sFilterConfig.FilterMaskIdHigh = (uint16_t) ( 0x10600000>>13);
+//	    sFilterConfig.FilterMaskIdLow  = ((uint16_t) (0x10600000<<3))|0x0004;
+//	    if(HAL_CAN_ConfigFilter(&hcan1, &sFilterConfig) != HAL_OK) { Error_Handler(); }
+
+ }  /* Filter configuration Error */
   /////////////////////////////////////////////////////////////////////
 
 

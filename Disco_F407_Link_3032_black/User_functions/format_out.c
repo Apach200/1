@@ -173,21 +173,21 @@ uint16_t Size_to_Send;
 	switch (Select_Array)
 	{
 	case 0:	Size_to_Send = sprintf((char*)Array_2_UART_a,pMessage);
-			added_length = sprintf((char*)&Array_2_UART_a[Size_to_Send]  ," = 0x%04X%04X \n\r\n\r\n\r\n\r",(uint16_t)(Argument>>16),(uint16_t)(Argument & 0x0FFFF));
+			added_length = sprintf((char*)&Array_2_UART_a[Size_to_Send]  ," = 0x%04X%04X \n\r\n\r",(uint16_t)(Argument>>16),(uint16_t)(Argument & 0x0FFFF));
 			Select_Array=1;
 			while(TerminalInterface.gState != HAL_UART_STATE_READY){;}
 			HAL_UART_Transmit_IT( &TerminalInterface, (uint8_t*)Array_2_UART_a, Size_to_Send + added_length);
 	break;
 
 	case 1:	Size_to_Send = sprintf((char*)Array_2_UART_b,pMessage);
-			added_length = sprintf((char*)&Array_2_UART_a[Size_to_Send]  ," = 0x%04X%04X \n\r\n\r\n\r\n\r",(uint16_t)(Argument>>16),(uint16_t)(Argument & 0x0FFFF));
+			added_length = sprintf((char*)&Array_2_UART_a[Size_to_Send]  ," = 0x%04X%04X \n\r\n\r",(uint16_t)(Argument>>16),(uint16_t)(Argument & 0x0FFFF));
 			Select_Array=2;
 			while(TerminalInterface.gState != HAL_UART_STATE_READY){;}
 			HAL_UART_Transmit_IT( &TerminalInterface, (uint8_t*)Array_2_UART_b,  Size_to_Send + added_length);
 	break;
 
 	case 2:	Size_to_Send = sprintf((char*)Array_2_UART_c,pMessage);
-			added_length = sprintf((char*)&Array_2_UART_a[Size_to_Send]  ," = 0x%04X%04X \n\r\n\r\n\r\n\r",(uint16_t)(Argument>>16),(uint16_t)(Argument & 0x0FFFF));
+			added_length = sprintf((char*)&Array_2_UART_a[Size_to_Send]  ," = 0x%04X%04X \n\r\n\r",(uint16_t)(Argument>>16),(uint16_t)(Argument & 0x0FFFF));
 			Select_Array=0;
 			while(TerminalInterface.gState != HAL_UART_STATE_READY){;}
 			HAL_UART_Transmit_IT( &TerminalInterface, (uint8_t*)Array_2_UART_c,  Size_to_Send + added_length);
@@ -288,7 +288,7 @@ void Get_Time(void)
 			HAL_RTC_GetTime(&hrtc, &sTime, RTC_FORMAT_BIN);
 			while(TerminalInterface.gState != HAL_UART_STATE_READY){;}
 			Length_Msg=sprintf(Array_char_x_64,
-								"   *  System Time %d.%d.%02d \n\r", //  System
+								" *  System Time %d.%d.%02d \n\r", //  System
 								sTime.Hours, sTime.Minutes, sTime.Seconds);
 			HAL_UART_Transmit( &TerminalInterface, (uint8_t*)(Array_char_x_64), Length_Msg,5);
 			while(TerminalInterface.gState != HAL_UART_STATE_READY){;}
@@ -335,7 +335,7 @@ void Get_Date(void)
 HAL_RTC_GetDate(&hrtc, &DateToUpdate, RTC_FORMAT_BIN);
 while(TerminalInterface.gState != HAL_UART_STATE_READY){;}
 Length_Msg=sprintf(Array_char_x_32,
-					"   *  Date %02d.%02d.20%02d\n\r",
+					" *  Date %02d.%02d.20%02d\n\r",
 					DateToUpdate.Date, DateToUpdate.Month, DateToUpdate.Year);
 //CDC_Transmit_FS((uint8_t*)Array_for_Messages, strlen(Array_for_Messages));//to_usb
 HAL_UART_Transmit( &TerminalInterface, (uint8_t*)(Array_char_x_32), Length_Msg,2);
